@@ -1,0 +1,18 @@
+﻿html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+#wrapper {
+    height: 100%;
+    text-align: center;
+}
+
+canvas {    
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);    
+}
