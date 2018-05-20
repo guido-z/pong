@@ -11,10 +11,8 @@ body {
     text-align: center;
 }
 
-canvas {
-    height: 400px;
+canvas {    
     position: relative;
     top: 50%;
-    transform: translateY(-50%);
-    width: 800px;
+    transform: translateY(-50%);    
 }
