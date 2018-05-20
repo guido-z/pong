@@ -21,3 +21,33 @@ class Position {
         this.y = y;
     }
 }
+
+class UI {
+    constructor(uiComponents) {
+        this._uiComponents = uiComponents;
+    }
+
+    update() {
+    }
+
+    draw(ctx) {
+        for (let uiComponent of this._uiComponents) {
+            uiComponent.draw(ctx);
+        }
+    }
+}
+
+class UIComponent {
+    constructor(position) {
+        this._position = position;
+        this._value = 0;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.font = '30px Arial';
+        ctx.fillStyle = 'white';
+        ctx.fillText(this._value, this._position.x, this._position.y);
+        ctx.restore();
+    }
+}

@@ -5,8 +5,18 @@
     }
 
     init() {
+        // Paddles
         this._paddle1 = new Paddle(new Position(10, 150));
         this._paddle2 = new Paddle(new Position(770, 150));
+
+        // UI
+        const score1 = new UIComponent(new Position(340, 50));
+        const score2 = new UIComponent(new Position(460, 50));
+
+        this._ui = new UI([
+            score1,
+            score2
+        ]);
     }
 
     run() {
@@ -19,6 +29,7 @@
     _update() {
         this._paddle1.update();
         this._paddle2.update();
+        this._ui.update();
     }
 
     _draw() {
@@ -28,5 +39,7 @@
 
         this._paddle1.draw(this._ctx);
         this._paddle2.draw(this._ctx);
+
+        this._ui.draw(this._ctx);
     }
 }
