@@ -11,11 +11,11 @@
     }
 
     moveUp() {
-        this._position.move(0, -10);
+        this._position.moveTo(0, -10);
     }
 
     moveDown() {
-        this._position.move(0, 10);
+        this._position.moveTo(0, 10);
     }
 }
 
@@ -25,7 +25,7 @@ class Position {
         this.y = y;
     }
 
-    move(x, y) {
+    moveTo(x, y) {
         this.x += x;
         this.y += y;
     }
