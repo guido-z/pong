@@ -23,10 +23,13 @@
     }
 
     run() {
-        setInterval(() => {
+        const callback = () => {
             this._update();
             this._draw();
-        }, this._configuration.targetFramerate);
+            requestAnimationFrame(callback);
+        };
+
+        requestAnimationFrame(callback);
     }
 
     _update() {        
