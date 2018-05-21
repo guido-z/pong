@@ -23,16 +23,16 @@
     }
 
     run() {
-        setInterval(() => {
+        const callback = () => {
             this._update();
             this._draw();
-        }, this._configuration.targetFramerate);
+            requestAnimationFrame(callback);
+        };
+
+        requestAnimationFrame(callback);
     }
 
-    _update() {        
-        this._paddle1.update();
-        this._paddle2.update();
-        this._ui.update();
+    _update() {
     }
 
     _processInput() {
