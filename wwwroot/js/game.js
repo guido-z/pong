@@ -11,7 +11,7 @@
         this._activePaddle = this._paddle1;
 
         // UI
-        const score1 = new UIComponent(new Position(340, 50));
+        const score1 = new UIComponent(new Position(330, 50));
         const score2 = new UIComponent(new Position(460, 50));
 
         this._ui = new UI([
@@ -45,13 +45,23 @@
     }
 
     _draw() {
+        // Field        
         this._ctx.clearRect(0, 0, this._configuration.viewPort.width, this._configuration.viewPort.height);
         this._ctx.fillStyle = this._configuration.backgroundColor;
         this._ctx.fillRect(0, 0, this._configuration.viewPort.width, this._configuration.viewPort.height);
 
+        // Middle line
+        this._ctx.beginPath();
+        this._ctx.moveTo(400, 0);
+        this._ctx.strokeStyle = 'white';
+        this._ctx.lineTo(400, 400);
+        this._ctx.stroke();
+
+        // Game objects
         this._paddle1.draw(this._ctx);
         this._paddle2.draw(this._ctx);
 
+        // UI
         this._ui.draw(this._ctx);
     }
 }
