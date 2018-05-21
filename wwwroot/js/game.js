@@ -32,10 +32,7 @@
         requestAnimationFrame(callback);
     }
 
-    _update() {        
-        this._paddle1.update();
-        this._paddle2.update();
-        this._ui.update();
+    _update() {
     }
 
     _processInput() {
