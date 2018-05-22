@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Pong.MessageHandler;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -13,11 +15,13 @@ namespace WebSockets.Middleware
     {
         private RequestDelegate next;
         private ConcurrentDictionary<string, WebSocket> sockets;
+        private IMessageHandler messageHandler;
 
-        public WebSocketsMiddleware(RequestDelegate next)
+        public WebSocketsMiddleware(RequestDelegate next, IMessageHandler messageHandler)
         {
             this.next = next;
             sockets = new ConcurrentDictionary<string, WebSocket>();
+            this.messageHandler = messageHandler;
         }
 
         public async Task Invoke(HttpContext context)
@@ -30,8 +34,8 @@ namespace WebSockets.Middleware
 
             CancellationToken ct = context.RequestAborted;
             WebSocket currentSocket = await context.WebSockets.AcceptWebSocketAsync();
-            var socketId = Guid.NewGuid().ToString();
 
+            var socketId = Guid.NewGuid().ToString();
             sockets.TryAdd(socketId, currentSocket);
 
             while (true)
@@ -41,9 +45,9 @@ namespace WebSockets.Middleware
                     break;
                 }
 
-                var response = socketId + ": " + await ReceiveStringAsync(currentSocket, ct);
+                var message = await ReceiveStringAsync(currentSocket, ct);
 
-                if (string.IsNullOrEmpty(response))
+                if (string.IsNullOrEmpty(message))
                 {
                     if (currentSocket.State == WebSocketState.Closed)
                     {
@@ -53,14 +57,16 @@ namespace WebSockets.Middleware
                     continue;
                 }
 
-                foreach (var socket in sockets)
+                MessageResponse response = messageHandler.HandleMessage(sockets, currentSocket, message);                
+
+                foreach (var socket in response.Clients)
                 {
-                    if (socket.Value.State != WebSocketState.Open)
+                    if (socket.State != WebSocketState.Open)
                     {
                         continue;
                     }
 
-                    await SendStringAsync(socket.Value, response, ct);
+                    await SendStringAsync(socket, JsonConvert.SerializeObject(response.Data), ct);
                 }
             }
 
