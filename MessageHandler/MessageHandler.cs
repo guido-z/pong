@@ -26,7 +26,7 @@ namespace Pong.MessageHandler
             return new MessageResponse()
             {
                 Clients = new List<WebSocket>() { currentSocket },
-                Data = new { PlayerNumber = sockets.Count <= 2 ? sockets.Count : 0 }
+                Data = new { Message = "playerNumber", PlayerNumber = sockets.Count <= 2 ? sockets.Count : 0 }
             };
         }
     }

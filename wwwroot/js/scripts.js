@@ -11,11 +11,13 @@
         targetFramerate: 16
     };
 
-    const socket = createConnection();
+    const connection = createConnection();
 
-    const game = new Game(configuration, socket, ctx);
-    game.init();
-    game.run();
+    connection.onopen.subscribe(() => {
+        const game = new Game(configuration, connection, ctx);
+        game.init();
+        game.run();
+    });
 };
 
 function createConnection() {
@@ -23,5 +25,5 @@ function createConnection() {
     const host = location.host;
     const url = protocol + '//' + host + '/api/values';
 
-    return new WebSocket(url);
+    return new Connection(url);
 }
