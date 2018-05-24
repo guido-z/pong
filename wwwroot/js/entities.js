@@ -10,12 +10,14 @@
         ctx.fillRect(this._position.x, this._position.y, this._width, this._height);
     }
 
-    moveUp() {
+    moveUp() {        
         this._position.moveTo(0, -10);
+        MessageBus.instance.publish('paddlePositionChange', this._position);
     }
 
-    moveDown() {
+    moveDown() {       
         this._position.moveTo(0, 10);
+        MessageBus.instance.publish('paddlePositionChange', this._position);
     }
 }
 

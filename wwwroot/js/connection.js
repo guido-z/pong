@@ -17,7 +17,7 @@ class Connection {
     }
 
     send(message) {
-        this._socket.send(message);
+        this._socket.send(JSON.stringify(message));
     }
 
     _registerEvents() {

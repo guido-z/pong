@@ -3,6 +3,7 @@
         this._configuration = configuration;
         this._connection = connection;
         this._ctx = ctx;
+        this._ready = false;
     }
 
     init() {
@@ -12,10 +13,24 @@
             new Paddle(new Position(770, 150))
         ];
 
-        // Get player number        
-        this._connection.send('playerNumber');
-
         this._connection.onmessage.subscribe(data => { this._handleMessage(data); });
+
+        MessageBus.instance
+            .subscribe('paddlePositionChange')
+            .subscribe(data => {
+                this._connection.send({
+                    operation: 'updatePaddlePosition',
+                    data: {
+                        playerNumber: this._playerNumber,
+                        position: this._activePaddle._position
+                    }
+                });
+            });
+
+        // Get player number        
+        this._connection.send({
+            operation: 'playerNumber'            
+        });        
 
         // UI
         const score1 = new UIComponent(new Position(330, 50));
@@ -46,6 +61,11 @@
         switch (data.Message) {
             case 'playerNumber':
                 this._activePaddle = this._paddles[data.PlayerNumber - 1];
+                this._playerNumber = data.PlayerNumber;                
+                this._ready = true;
+                break
+            case 'updatePaddlePosition':
+                this._paddles[data.PlayerNumber - 1]._position = { x: data.Position.X, y: data.Position.Y };
                 break;
         }
     }

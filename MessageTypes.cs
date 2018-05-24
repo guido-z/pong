@@ -8,5 +8,6 @@ namespace Pong
     public class MessageTypes
     {
         public const string playerNumber = "playerNumber";
+        public const string updatePaddlePosition = "updatePaddlePosition";
     }
 }

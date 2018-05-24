@@ -13,6 +13,15 @@ class MessageBus {
     }
 
     subscribe(event) {
+        if (!this._events[event]) {
+            this._events[event] = new Subject();
+        }
         return this._events[event];
+    }
+
+    publish(event, payload) {
+        if (this._events[event]) {
+            this._events[event].next(payload);
+        }
     }
 }
