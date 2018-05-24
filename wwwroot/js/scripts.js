@@ -11,7 +11,19 @@
         targetFramerate: 16
     };
 
-    const game = new Game(configuration, ctx);
-    game.init();
-    game.run();
+    const connection = createConnection();
+
+    connection.onopen.subscribe(() => {
+        const game = new Game(configuration, connection, ctx);
+        game.init();
+        game.run();
+    });
 };
+
+function createConnection() {
+    const protocol = location.protocol === 'http:' ? 'ws:' : 'wss:';
+    const host = location.host;
+    const url = protocol + '//' + host + '/api/values';
+
+    return new Connection(url);
+}
