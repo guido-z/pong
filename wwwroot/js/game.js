@@ -7,41 +7,18 @@
     }
 
     init() {
-        // Create paddles
-        this._paddles = [
-            new Paddle(new Position(10, 150)),
-            new Paddle(new Position(770, 150))
-        ];
-
+        this._createGameObjects();        
         this._connection.onmessage.subscribe(data => { this._handleMessage(data); });
-
-        MessageBus.instance
-            .subscribe('paddlePositionChange')
-            .subscribe(data => {
-                this._connection.send({
-                    operation: 'updatePaddlePosition',
-                    data: {
-                        playerNumber: this._playerNumber,
-                        position: this._activePaddle._position
-                    }
-                });
-            });
+        this._handleEvents();
 
         // Get player number        
         this._connection.send({
             operation: 'playerNumber'            
-        });        
+        });
 
-        // UI
-        const score1 = new UIComponent(new Position(330, 50));
-        const score2 = new UIComponent(new Position(460, 50));
-
-        this._ui = new UI([
-            score1,
-            score2
-        ]);
-
-        this._processInput();
+        window.onbeforeunload = () => {
+            this._connection.close();
+        };
     }
 
     run() {
@@ -57,25 +34,49 @@
     _update() {
     }
 
+    _createGameObjects() {
+        this._paddles = [
+            new Paddle(new Position(10, 150)),
+            new Paddle(new Position(770, 150))
+        ];
+
+        this._ui = new UI([
+            new UIComponent(new Position(330, 50)),
+            new UIComponent(new Position(460, 50))
+        ]);
+    }
+
     _handleMessage(data) {
-        switch (data.Message) {
+        switch (data.message) {
             case 'playerNumber':
-                this._activePaddle = this._paddles[data.PlayerNumber - 1];
-                this._playerNumber = data.PlayerNumber;                
+                this._activePaddle = this._paddles[data.playerNumber - 1];
+                this._playerNumber = data.playerNumber;                
                 this._ready = true;
                 break
             case 'updatePaddlePosition':
-                this._paddles[data.PlayerNumber - 1]._position = { x: data.Position.X, y: data.Position.Y };
+                this._paddles[data.playerNumber - 1]._position = data.position;
                 break;
         }
     }
 
-    _processInput() {
+    _handleEvents() {
         MessageBus.instance
             .subscribe('keyDown')
             .subscribe(e => {
                 if (e.keyCode === 38) this._activePaddle.moveUp();
                 else if (e.keyCode === 40) this._activePaddle.moveDown();
+            });
+
+        MessageBus.instance
+            .subscribe('paddlePositionChange')
+            .subscribe(position => {
+                this._connection.send({
+                    operation: 'updatePaddlePosition',
+                    data: {
+                        playerNumber: this._playerNumber,
+                        position: position
+                    }
+                });
             });
     }
 

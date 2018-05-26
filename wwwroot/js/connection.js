@@ -20,6 +20,10 @@ class Connection {
         this._socket.send(JSON.stringify(message));
     }
 
+    close() {
+        this._connection.close();
+    }
+
     _registerEvents() {
         this._socket.onopen = event => {
             this._onOpen.next();

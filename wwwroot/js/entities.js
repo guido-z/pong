@@ -5,18 +5,21 @@
         this._width = 20;
     }
 
+    moveUp() {
+        this._move(0, -10)
+    }
+
+    moveDown() {
+        this._move(0, 10);
+    }
+
     draw(ctx) {
         ctx.fillStyle = 'white';
         ctx.fillRect(this._position.x, this._position.y, this._width, this._height);
     }
 
-    moveUp() {        
-        this._position.moveTo(0, -10);
-        MessageBus.instance.publish('paddlePositionChange', this._position);
-    }
-
-    moveDown() {       
-        this._position.moveTo(0, 10);
+    _move(x, y) {
+        this._position.move(x, y);
         MessageBus.instance.publish('paddlePositionChange', this._position);
     }
 }
@@ -27,7 +30,7 @@ class Position {
         this.y = y;
     }
 
-    moveTo(x, y) {
+    move(x, y) {
         this.x += x;
         this.y += y;
     }

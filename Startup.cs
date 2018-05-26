@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Pong.MessageHandler;
 using WebSockets.Middleware;
 
@@ -20,7 +22,8 @@ namespace Pong
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddTransient<IMessageHandler, MessageHandler.MessageHandler>();
+            services.AddTransient<WebSocketConnectionManager>();
+            services.AddTransient<IMessageHandler, MessageHandler.MessageHandler>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -31,11 +34,23 @@ namespace Pong
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDefaultFiles()                
+            ConfigureJsonConverter();
+
+            app.UseDefaultFiles()
                 .UseStaticFiles()
                 .UseWebSockets()
                 .UseMiddleware<WebSocketsMiddleware>()
-                .UseMvc();            
+                .UseMvc();
+        }
+
+        private void ConfigureJsonConverter()
+        {
+            var serializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+
+            JsonConvert.DefaultSettings = () => serializerSettings;
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Pong.MessageHandler
 
         private MessageResponse UpdatePaddlePosition(IDictionary<string, WebSocket> sockets, WebSocket currentSocket, Message message)
         {
-            var payload = ProcessPayload<UpdatePaddlePositionData>(message.Data);
+            var payload = message.GetData<UpdatePaddlePositionData>();
 
             return new MessageResponse()
             {
@@ -49,11 +49,6 @@ namespace Pong.MessageHandler
                     payload.Position
                 }
             };
-        }
-
-        private T ProcessPayload<T>(object payload)
-        {
-            return ((JObject)payload).ToObject<T>();
         }
     }
 }

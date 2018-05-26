@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Pong;
 using Pong.MessageHandler;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
@@ -14,13 +14,13 @@ namespace WebSockets.Middleware
     public class WebSocketsMiddleware
     {
         private RequestDelegate next;
-        private ConcurrentDictionary<string, WebSocket> sockets;
+        private WebSocketConnectionManager manager;
         private IMessageHandler messageHandler;
 
-        public WebSocketsMiddleware(RequestDelegate next, IMessageHandler messageHandler)
+        public WebSocketsMiddleware(RequestDelegate next, WebSocketConnectionManager manager, IMessageHandler messageHandler)
         {
             this.next = next;
-            sockets = new ConcurrentDictionary<string, WebSocket>();
+            this.manager = manager;
             this.messageHandler = messageHandler;
         }
 
@@ -28,52 +28,30 @@ namespace WebSockets.Middleware
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                await next.Invoke(context);
                 return;
             }
 
-            CancellationToken ct = context.RequestAborted;
             WebSocket currentSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-            var socketId = Guid.NewGuid().ToString();
-            sockets.TryAdd(socketId, currentSocket);
+            manager.AddSocket(currentSocket);
 
             while (true)
             {
-                if (ct.IsCancellationRequested)
+                var message = await ReceiveStringAsync(currentSocket);
+
+                if (string.IsNullOrEmpty(message))
                 {
                     break;
                 }
 
-                var message = await ReceiveStringAsync(currentSocket, ct);
-
-                if (string.IsNullOrEmpty(message))
-                {
-                    if (currentSocket.State == WebSocketState.Closed)
-                    {
-                        break;
-                    }
-
-                    continue;
-                }
-
-                MessageResponse response = messageHandler.HandleMessage(sockets, currentSocket, message);                
+                MessageResponse response = messageHandler.HandleMessage(manager.Sockets, currentSocket, message);
 
                 foreach (var socket in response.Clients)
                 {
-                    if (socket.State != WebSocketState.Open)
-                    {
-                        continue;
-                    }
-
-                    await SendStringAsync(socket, JsonConvert.SerializeObject(response.Data), ct);
+                    await SendStringAsync(socket, JsonConvert.SerializeObject(response.Data), CancellationToken.None);
                 }
             }
 
-            sockets.TryRemove(socketId, out WebSocket dummy);
-
-            await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct);
-            currentSocket.Dispose();
+            await manager.RemoveSocket(currentSocket);
         }
 
         private Task SendStringAsync(WebSocket socket, string data, CancellationToken ct)
@@ -83,7 +61,7 @@ namespace WebSockets.Middleware
             return socket.SendAsync(segment, WebSocketMessageType.Text, true, ct);
         }
 
-        private async Task<string> ReceiveStringAsync(WebSocket socket, CancellationToken ct)
+        private async Task<string> ReceiveStringAsync(WebSocket socket)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
             using (var ms = new MemoryStream())
@@ -91,9 +69,7 @@ namespace WebSockets.Middleware
                 WebSocketReceiveResult result;
                 do
                 {
-                    ct.ThrowIfCancellationRequested();
-
-                    result = await socket.ReceiveAsync(buffer, ct);
+                    result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                     ms.Write(buffer.Array, buffer.Offset, result.Count);
                 }
                 while (!result.EndOfMessage);
