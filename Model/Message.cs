@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json.Linq;
 
 namespace Pong
 {
@@ -9,5 +6,10 @@ namespace Pong
     {
         public string Operation { get; set; }
         public object Data { get; set; }
+
+        public T GetData<T>()
+        {
+            return ((JObject)Data).ToObject<T>();
+        }
     }
 }

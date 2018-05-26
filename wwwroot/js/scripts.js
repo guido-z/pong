@@ -7,8 +7,7 @@
         viewPort: {
             height: canvas.getAttribute('height'),
             width: canvas.getAttribute('width')
-        },
-        targetFramerate: 16
+        }
     };
 
     const connection = createConnection();
