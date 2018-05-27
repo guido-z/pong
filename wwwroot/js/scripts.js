@@ -15,7 +15,6 @@
     connection.onopen.subscribe(() => {
         const game = new Game(configuration, connection, ctx);
         game.init();
-        game.run();
     });
 };
 
