@@ -3,7 +3,8 @@
 class MessageBus {
     constructor() {        
         this._events = {
-            keyDown: fromEvent(document, 'keydown')
+            keyDown: fromEvent(document, 'keydown'),
+            keyUp: fromEvent(document, 'keyup')
         };
     }
 

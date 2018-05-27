@@ -30,7 +30,7 @@ namespace Pong.MessageHandler
         {
             return new MessageResponse()
             {
-                Clients = new List<WebSocket>() { currentSocket },
+                Clients = sockets.Values.Take(2),
                 Data = new { Message = message.Operation, PlayerNumber = sockets.Count <= 2 ? sockets.Count : 0 }
             };
         }
