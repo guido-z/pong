@@ -3,6 +3,7 @@
         this._configuration = configuration;
         this._connection = connection;
         this._ctx = ctx;
+        this._previous = Date.now();
 
         this._waitingForPlayersCallback = () => {
             this._drawWaitingScreen();
@@ -10,6 +11,7 @@
         };
 
         this._gameCallback = () => {
+            this._setDelta();
             this._update();
             this._draw();
             requestAnimationFrame(this._gameCallback);
@@ -37,10 +39,16 @@
         requestAnimationFrame(this._gameCallback);
     }
 
+    _setDelta() {
+        this._now = Date.now();
+        this._delta = (this._now - this._previous) / 1000;
+        this._previous = this._now;
+    }
+    
     _update() {
         this._activePaddle.update();
 
-        this._ball.update();
+        this._ball.update(this._delta);
 
         this._paddles.forEach(paddle => {
             this._ball.checkCollisionAgainstPaddle(paddle);
@@ -80,7 +88,7 @@
 
         if (data.playerNumber === 2) {
             this._callback = this._gameCallback;
-            this.run();
+            setTimeout(() => this.run(), 3000);            
         }
     }
 

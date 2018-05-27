@@ -40,7 +40,7 @@
 class Ball {
     constructor(position, direction) {
         this._position = position;
-        this._velocity = 5;
+        this._velocity = 400;
         this._setSpeed(direction || new Vector2(1, -1));
         this._height = 15;
         this._width = 15;
@@ -50,8 +50,8 @@ class Ball {
         return new Rectangle(this._position.x, this._position.y, this._width, this._height);
     }
 
-    update() {
-        this._position = this._position.add(this._speed);
+    update(delta) {
+        this._position = this._position.add(this._speed.multiply(delta));
     }
 
     checkCollisionAgainstPaddle(paddle) {
