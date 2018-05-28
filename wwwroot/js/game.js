@@ -1,60 +1,15 @@
 ﻿class Game {
-    constructor(configuration, connection, ctx) {
+    constructor(configuration, client, ctx) {
         this._configuration = configuration;
-        this._connection = connection;
+        this._client = client;
         this._ctx = ctx;
-        this._previous = Date.now();
-
-        this._waitingForPlayersCallback = () => {
-            this._drawWaitingScreen();
-            requestAnimationFrame(this._waitingForPlayersCallback);
-        };
-
-        this._gameCallback = () => {
-            this._setDelta();
-            this._update();
-            this._draw();
-            requestAnimationFrame(this._gameCallback);
-        };        
-    }
-
-    init() {
-        this._createGameObjects();
-        this._connection.onmessage.subscribe(data => { this._handleMessage(data); });
-        this._handleEvents();
-
-        // Get player number        
-        this._connection.send({
-            operation: 'playerNumber'
-        });
-
-        window.onbeforeunload = () => {
-            this._connection.close();
-        };
-
-        this._drawWaitingScreen();
-    }
+        this._gameTime = new GameTime();
+        this._createGameObjects();        
+        this._init();
+    }    
 
     run() {
-        requestAnimationFrame(this._gameCallback);
-    }
-
-    _setDelta() {
-        this._now = Date.now();
-        this._delta = (this._now - this._previous) / 1000;
-        this._previous = this._now;
-    }
-    
-    _update() {
-        this._activePaddle.update();
-
-        this._ball.update(this._delta);
-
-        this._paddles.forEach(paddle => {
-            this._ball.checkCollisionAgainstPaddle(paddle);
-        });
-
-        this._ball.checkCollisionAgainstBounds(this._configuration.viewPort);
+        this._client.getPlayerNumber();
     }
 
     _createGameObjects() {
@@ -71,9 +26,40 @@
         ]);
     }
 
+    _init() {
+        window.onbeforeunload = this._client.close;
+        this._client.onmessage.subscribe(this._handleMessage.bind(this));
+        this._subscribeToEvents();
+        this._drawWaitingScreen();        
+    }
+
+    _startMatch() {
+        const gameCallback = () => {
+            this._update();
+            this._draw();
+            requestAnimationFrame(gameCallback);
+        };
+
+        requestAnimationFrame(gameCallback);
+    }
+    
+    _update() {
+        this._gameTime.update();
+
+        this._activePaddle.update();
+
+        this._ball.update(this._gameTime);
+
+        this._paddles.forEach(paddle => {
+            this._ball.checkCollisionAgainstPaddle(paddle);
+        });
+
+        this._ball.checkCollisionAgainstBounds(this._configuration.viewPort);
+    }
+    
     _handleMessage(data) {
         const messageHandlers = {
-            playerNumber: this._onPlayerConnected,
+            getPlayerNumber: this._onPlayerConnected,
             updatePaddlePosition: this._onUpdatePaddlePosition
         };
 
@@ -87,8 +73,7 @@
         }
 
         if (data.playerNumber === 2) {
-            this._callback = this._gameCallback;
-            setTimeout(() => this.run(), 3000);            
+            this._startMatch();         
         }
     }
 
@@ -96,7 +81,7 @@
         this._paddles[data.playerNumber - 1]._position = data.position;
     }
 
-    _handleEvents() {
+    _subscribeToEvents() {
         MessageBus.instance
             .subscribe('keyDown')
             .subscribe(this._onKeyDown.bind(this));
@@ -129,13 +114,10 @@
         }
     }
 
-    _sendActivePaddlePosition(position) {
-        this._connection.send({
-            operation: 'updatePaddlePosition',
-            data: {
-                playerNumber: this._playerNumber,
-                position: position
-            }
+    _sendActivePaddlePosition(position) {        
+        this._client.updatePaddlePosition({
+            playerNumber: this._playerNumber,
+            position: position
         });
     }
 

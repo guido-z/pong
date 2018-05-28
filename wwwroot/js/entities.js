@@ -50,8 +50,8 @@ class Ball {
         return new Rectangle(this._position.x, this._position.y, this._width, this._height);
     }
 
-    update(delta) {
-        this._position = this._position.add(this._speed.multiply(delta));
+    update(gameTime) {
+        this._position = this._position.add(this._speed.multiply(gameTime.timeSinceLastFrame));
     }
 
     checkCollisionAgainstPaddle(paddle) {
@@ -119,13 +119,6 @@ class Vector2 {
 
     multiply(number) {
         return new Vector2(number * this.x, number * this.y);
-    }
-}
-
-class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
     }
 }
 
@@ -197,5 +190,21 @@ class UIComponent {
         ctx.font = '30px Arial';
         ctx.fillStyle = 'white';
         ctx.fillText(this._value, this._position.x, this._position.y);
+    }
+}
+
+class GameTime {
+    constructor() {
+        this._previous = Date.now();
+    }
+
+    get timeSinceLastFrame() {
+        return this._delta;
+    }
+
+    update() {
+        this._now = Date.now();
+        this._delta = (this._now - this._previous) / 1000;
+        this._previous = this._now;
     }
 }

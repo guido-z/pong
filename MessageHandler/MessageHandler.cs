@@ -15,7 +15,7 @@ namespace Pong.MessageHandler
         {
             messageHandlingStrategy = new Dictionary<string, Func<IDictionary<string, WebSocket>, WebSocket, Message, MessageResponse>>()
             {
-                { MessageTypes.playerNumber, SetPlayerNumber },
+                { MessageTypes.getPlayerNumber, SetPlayerNumber },
                 { MessageTypes.updatePaddlePosition, UpdatePaddlePosition }
             };
         }

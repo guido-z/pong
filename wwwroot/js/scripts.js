@@ -10,11 +10,11 @@
         }
     };
 
-    const connection = createConnection();
+    const client = createConnection();
 
-    connection.onopen.subscribe(() => {
-        const game = new Game(configuration, connection, ctx);
-        game.init();
+    client.onopen.subscribe(() => {
+        const game = new Game(configuration, client, ctx);
+        game.run();
     });
 };
 
@@ -23,5 +23,5 @@ function createConnection() {
     const host = location.host;
     const url = protocol + '//' + host + '/api/values';
 
-    return new Connection(url);
+    return new WebSocketsClient(url);
 }

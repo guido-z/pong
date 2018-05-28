@@ -1,6 +1,6 @@
 ﻿const { Subject } = rxjs;
 
-class Connection {
+class WebSocketsClient {
     constructor(url) {
         this._socket = new WebSocket(url);    
         this._onOpen = new Subject();
@@ -15,13 +15,20 @@ class Connection {
     get onmessage() {
         return this._onMessage;
     }
-
-    send(message) {
-        this._socket.send(JSON.stringify(message));
-    }
-
+    
     close() {
         this._connection.close();
+    }
+
+    getPlayerNumber() {
+        this._send({ operation: 'getPlayerNumber' });
+    }
+
+    updatePaddlePosition(data) {
+        this._send({
+            operation: 'updatePaddlePosition',
+            data: data
+        });
     }
 
     _registerEvents() {
@@ -32,5 +39,9 @@ class Connection {
         this._socket.onmessage = ({ data }) => {
             this._onMessage.next(JSON.parse(data));
         };
+    }
+
+    _send(message) {
+        this._socket.send(JSON.stringify(message));
     }
 }
